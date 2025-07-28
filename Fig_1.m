@@ -1,5 +1,8 @@
+m = matfile('/data/subject_data.mat');  % absolute path inside capsule
+subject = m.subject;
+
 % Define the range of subjects to loop over
-subjectRange = 5; %one in Figure 1 is Subject 5
+n_subjects = 6; %one in Figure 1 is Subject 5
 
 % Initialize an empty matrix to store results
 % Columns: [SubjectID, ModelType (1 for Conflict, 2 for Reaction Time), R_squared, Beta, P_value]
@@ -11,109 +14,76 @@ lambda_store = [];
 mu_store = [];
 
 % Loop through each subject
-for n = subjectRange
+for n = 1:n_subjects
 
-    % Call the plotSubjectData function and capture the R^2, beta weights, and p-values
-    [rho_conflict, pval_conflict, rho_rt, pval_rt,alpha_reward,alpha_punish,lambda,mu] = ...
-        plotSubjectData(n, subject(n).reward_coeff, subject(n).punish_coeff, ...
-                        subject(n).reward_trial, subject(n).punish_trial, ...
-                        subject(n).decision, subject(n).conflict_trial_type, ...
-                        subject(n).rt/1000, subject(n).reward_trial_type, subject(n).punishment_trial_type,subject(n).p_approach_trial_type,subject(n).conflict_trial');
-    
-    % Append the results for conflict vs. decision function (subplot 3)
+    % Call your plotting function
+    [rho_conflict, pval_conflict, rho_rt, pval_rt, ...
+     alpha_reward, alpha_punish, lambda, mu] = ...
+        plotSubjectData(n, ...
+            subject(n).reward_trial, subject(n).punish_trial, ...
+            subject(n).decision, subject(n).conflict_trial_type, ...
+            subject(n).rt/1000, subject(n).reward_trial_type, ...
+            subject(n).punishment_trial_type, ...
+            subject(n).p_approach_trial_type, subject(n).conflict_trial');
+
+    % Collect results
     results1 = [results1; n, rho_conflict, pval_conflict];
-
-    % Append the results for reaction time vs. decision function (subplot 4)
     results2 = [results2; n, rho_rt, pval_rt];
     alpha_reward_store = [alpha_reward_store alpha_reward];
     alpha_punish_store = [alpha_punish_store alpha_punish];
+    lambda_store = [lambda_store lambda];
     mu_store = [mu_store mu];
-    lambda_store=[lambda_store lambda];
-    
+
+    % Save the figure only for Subject 5
+    % After calling plotSubjectData, get the current figure handle
+    if n == 5
+        f = gcf;  % Grab current figure created by plotSubjectData
+        exportgraphics(f, '/results/figure1.png');  % Save to visible /results path
+        close(f);
+        disp('Saved /results/figure1.png');
+    end
+
+
+
 end
 
 % Display the results
 disp('Results Matrix (SubjectID, ModelType, R_squared, Beta, P_value):');
+disp('Conflict model results (results1):');
 disp(results1);
-disp(results2);
-%%
-figure; hold on
-jitter = 0.15;
-for n = 1:6
-    scatter(1- jitter/2 + rand * jitter,alpha_reward_store(n), 30, ...
-        [n*0.15 n*0.15 n*0.15], 'filled');  % Set RGB color and use 'filled'
-    hold on
-    scatter(2- jitter/2 + rand * jitter,alpha_punish_store(n), 30, ...
-        [n*0.15 n*0.15 n*0.15], 'filled');  % Set RGB color and use 'filled'
-    hold on
-    scatter(3- jitter/2 + rand * jitter,lambda_store(n), 30, ...
-        [n*0.15 n*0.15 n*0.15], 'filled');  % Set RGB color and use 'filled'
-    hold on
-end
-set(gca, 'Box', 'off', 'TickDir', 'out');
-set(gcf, 'Color', 'w');
-%%
-alpha_reward_store
-alpha_punish_store
-lambda_store
-
-%%
-psychtemp = [0 0 1 1 0 1];
-anova1(alpha_reward_store',psychtemp')
-anova1(alpha_punish_store',psychtemp')
-anova1(lambda_store',psychtemp')
-%%
-versiontemp = [0 1 1 0 0 0];
-anova1(alpha_reward_store',versiontemp')
-anova1(alpha_punish_store',versiontemp')
-anova1(lambda_store',versiontemp')
-%%
-load('behavior.mat')
-% Loop through each subject
-for n = subjectRange
-
-    % Call the plotSubjectData function and capture the R^2, beta weights, and p-values
-    [rho_conflict, pval_conflict, rho_rt, pval_rt] = ...
-        plotSubjectData(1, 1, 1, ...
-                        reward_trial, punish_trial, ...
-                        decision, conflict_trial_type, ...
-                        reaction_time/1000, reward_trial_type, punishment_trial_type,p_approach_trial_type,conflict_trial');
-    
-    % Append the results for conflict vs. decision function (subplot 3)
-    results1 = [results1; n, rho_conflict, pval_conflict];
-
-    % Append the results for reaction time vs. decision function (subplot 4)
-    results2 = [results2; n, rho_rt, pval_rt];
-end
-
-% Display the results
-disp('Results Matrix (SubjectID, ModelType, R_squared, Beta, P_value):');
-disp(results1);
+disp('Reaction time model results (results2):');
 disp(results2);
 
+
 %%
-for i=1:6
-if results1(i,3)<0.05
-    plot(1 + rand *0.1,results1(i,2),'k.')
-    hold on
-else
-    plot(1 + rand *0.1,results1(i,2),'r.')
-    hold on
+f1b = figure('Visible', 'off');
+
+for i = 1:6
+    if results1(i,3)<0.05
+        plot(1 + rand *0.1,results1(i,2),'k.'); hold on
+    else
+        plot(1 + rand *0.1,results1(i,2),'r.'); hold on
+    end
+
+    if results2(i,3)<0.05
+        plot(1.5 + rand *0.1,results2(i,2),'k.')
+    else
+        plot(1.5 + rand *0.1,results2(i,2),'r.')
+    end
 end
 
-if results2(i,3)<0.05
-    plot(1.5 + rand *0.1,results2(i,2),'k.')
-else
-    plot(1.5 + rand *0.1,results2(i,2),'r.')
-end
-end
-
-xlim([0.8 1.8])
-ylim([- 1 1])
+xlim([0.8 1.8]); ylim([-1 1]);
 box off; set(gca, 'TickDir', 'out');
+
+exportgraphics(f1b, '/results/figure1b.png');
+disp('Saved /results/figure1b.png');
+
+
+%%
+
 %% Adapted plotSubjectData function using prospect theory model
 function [rho_conflict, pval_conflict, rho_rt, pval_rt,alpha_reward_opt,alpha_punish_opt,lambda_opt,mu_opt] = ...
-    plotSubjectData(subjectID, reward_coeff, punish_coeff, rewards_trials, punishments_trials, ...
+    plotSubjectData(subjectID, rewards_trials, punishments_trials, ...
                     decision, conflict_all, reaction_time_all, reward_trial_types, punishment_trial_types, p_approach,conflict_trial)
     filter = find(decision<2);
     % Use the passed-in trial data for plotting

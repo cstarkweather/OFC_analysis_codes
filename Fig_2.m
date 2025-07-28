@@ -53,8 +53,7 @@ end
 
 %% generate flags for excluding any electrodes
 
-% Exclude certain indices
-
+% Exclude electrodes located medial to the olfactory sulcus
 exclude_indices = [olf_coordinates < -1];
 
 %for excluding arrays with majority posterior electrodes
@@ -85,6 +84,7 @@ flagged_side(exclude_indices) = [];
 
 
 %% Determine plot order - if using K means clustering
+figure(1)
 % PCA implementation: pca().
 % [COEFF, SCORE] = PCA(X) returns the principal component scores,
 %     i.e., the projections of X in the principal component space.  Rows
@@ -133,7 +133,7 @@ sorted_electrode_ID = flagged_electrode_ID(plotorder);
 % box off
 % set(gca, 'TickDir', 'out');  % Set tick marks to face out
 
-%
+figure(2)
 % Define a colormap for the subjects
 subject_colors = [
     0 0 0;  % Dusty Pink 
@@ -229,11 +229,26 @@ legend(folders, 'Location', 'eastoutside', 'FontSize', numbers_font_size);
 hold off;
 
 
+max_vals = zeros(3,1);
+min_vals = zeros(3,1);
+
+for i = 1:3
+    vals = proj_roc(clustlabel == i, 1);
+    max_vals(i) = max(vals);
+    min_vals(i) = min(vals);
+end
+
+% Find cluster(s) with the most positive max value
+clust1 = find(max_vals == max(max_vals));
+
+% Find cluster(s) with the most negative min value
+clust2 = find(min_vals == min(min_vals));
+
+
 %% look at group PSTH
 
-figure(2)
-
-clust_indices = find(clustlabel==2);
+figure(3)
+clust_indices = find(clustlabel==clust2);
 
 t = 2;num_conditions = 2;
 
@@ -333,8 +348,8 @@ xline(0,'k--','Linewidth',2)
 
 [h, p, ci, stats]=ttest([sum(for_anova{2}(:,1700:2000),2)])
 %% plot a heatmap of probability of being in particular cluster and extract data for chi-square test
-
-which_cluster =  3;
+figure(4)
+which_cluster =  clust1;
 % Parameters
 window_size = 10;  % Size of the sliding window in mm
 overlap = 5;    % Overlap between windows in mm
@@ -474,7 +489,6 @@ clim([0, 1]);  % Set the color limits to 0 to 1 (probability range)
 
 % Set transparency based on the number of electrodes in each bin
 alpha_data = total_electrodes_in_bins./max(max(total_electrodes_in_bins));
-%alpha_data = (total_electrodes_in_bins>0);%./max(max(total_electrodes_in_bins));
 set(h, 'AlphaData', alpha_data);
 
 % Set the null probability to correspond to gray in the colormap
@@ -489,94 +503,9 @@ ylim([-20 25])
 set(gca, 'YDir', 'normal'); 
 
 % Add labels and title
-title('Observed Cluster 3 Electrode Distribution', 'FontSize', 14);
+title('Observed Cluster Electrode Distribution', 'FontSize', 14);
 xlabel('Medial/Lateral (mm)', 'Fontsize', 14);
 ylabel('Rostral/Caudal (mm)', 'Fontsize', 14);
 set(gca, 'TickDir', 'out');
 box off;
-%% ask if cluster 1 and cluster 2 are different (must run the code above with cluster 1 for this to work!)
-which_cluster = 2;
-% Parameters
-window_size = 10;  % Size of the sliding window in mm
-overlap = 5;    % Overlap between windows in mm
-
-% Initialize lists for x and y coordinates
-all_med_coords = [];
-all_trans_coords = [];
-cluster_labels = [];
-
-% Collect all coordinates and cluster labels
-for i = 1:length(clustlabel)
-    n = flagged_subject_ID(i);
-    e = flagged_electrode_ID(i);
-    med_coor = subject(n).electrode(e).med_coor;
-    trans_coor = subject(n).electrode(e).trans_coor;
-    
-    all_med_coords = [all_med_coords; med_coor];
-    all_trans_coords = [all_trans_coords; trans_coor];
-    cluster_labels = [cluster_labels; clustlabel(i)];
-    %cluster_labels = [cluster_labels; tag(i)];
-end
-
-
-% Initialize matrix to store the number of Cluster 1 and total electrodes in each bin
-cluster2_electrodes_in_bins = zeros(length(y_centers), length(x_centers));
-total_electrodes_in_bins = zeros(length(y_centers), length(x_centers));
-
-% Loop over sliding window centers to calculate the number of Cluster 1 and total electrodes
-for x_idx = 1:length(x_centers)
-    for y_idx = 1:length(y_centers)
-        % Define the window range
-        x_start = x_centers(x_idx) - window_size/2;
-        x_end = x_centers(x_idx) + window_size/2;
-        y_start = y_centers(y_idx) - window_size/2;
-        y_end = y_centers(y_idx) + window_size/2;
-        
-        % Find electrodes within the current window
-        in_window = all_med_coords >= x_start & all_med_coords < x_end & ...
-                    all_trans_coords >= y_start & all_trans_coords < y_end;
-        
-        % Count total electrodes and Cluster 1 electrodes
-        total_electrodes = sum(in_window);
-        cluster2_electrodes = sum(in_window & cluster_labels == 2);
-        
-        % Store the counts
-        total_electrodes_in_bins(y_idx, x_idx) = total_electrodes;
-        cluster2_electrodes_in_bins(y_idx, x_idx) = cluster2_electrodes;
-    end
-end
-
-
-% Reshape the matrices into vectors for chi-square test
-observed_cluster1 = cluster1_electrodes_in_bins(:)+0.1;
-expected_cluster2 = cluster2_electrodes_in_bins(:)+0.1;
-
-% Remove NaN or zero entries (bins with no electrodes)
-valid_bins = (expected_cluster2) > 0;
-observed_cluster1 = observed_cluster1(valid_bins);
-expected_cluster2 = expected_cluster2(valid_bins);
-
-% Normalize the expected distribution to have the same total as the observed distribution
-expected_cluster2_normalized = expected_cluster2 * (sum(observed_cluster1) / sum(expected_cluster2));
-
-% Run the chi-square test
-chi2_stat = sum((observed_cluster1 - expected_cluster2_normalized).^2 ./ expected_cluster2_normalized);
-
-% Degrees of freedom: number of bins - 1
-df = length(observed_cluster1) - 1;
-
-% Compute p-value
-p_value = 1 - chi2cdf(chi2_stat, df);
-
-% Display results
-fprintf('Chi-Square Statistic: %.2f\n', chi2_stat);
-fprintf('Degrees of Freedom: %d\n', df);
-fprintf('p-value: %.4f\n', p_value);
-
-% Display the result of the chi-square test
-if p_value > 0.05
-    disp('The distributions of Cluster 1 and Cluster 2 are not significantly different.');
-else
-    disp('The distributions of Cluster 1 and Cluster 2 are significantly different.');
-end
 

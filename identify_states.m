@@ -107,7 +107,7 @@ end
 
 
 
-%% Calculate confidence intervals and plot
+% Calculate confidence intervals and plot
 % Extract the time points (you can adjust the offset as needed)
 timepoints = sliding_epochs(:,1)'-5000;  % Adjust this based on your time reference
 num_epochs = size(sliding_epochs,1);
@@ -176,7 +176,7 @@ end
 % Add a main title for the entire figure
 sgtitle('Decoding Accuracies Over Time with Standard Errors for All Subjects', 'FontSize', 16);
 
-%%
+%
 % Calculate mean and standard error for actual and shuffled accuracies across subjects
 mean_actual = mean(all_subjects_mean_accuracies, 1);  % Mean across subjects (rows)
 mean_shuffled = mean(all_subjects_mean_shuffled_accuracies, 1);  % Mean across subjects (rows)
@@ -218,7 +218,7 @@ y_ticks = linspace(y_limits(1), y_limits(2), 3);  % Create 5 evenly spaced ticks
 set(gca, 'YTick', y_ticks);
 xlim([-550 50])
 
-%% save accuracies
+% save accuracies
 
 save('accuracies.mat','all_subjects_selected_predictors','all_subjects_accuracies',...
     'all_subjects_mean_accuracies','all_subjects_shuffled_accuracies','all_subjects_mean_shuffled_accuracies','sliding_epochs');
@@ -234,7 +234,8 @@ trial_epochs(1,:) = [start_sliding (start_sliding +length_trial_epoch-1)];
 for i=2:num_epochs1
     trial_epochs(i,:) = [(trial_epochs(i-1,1)+spacing) (trial_epochs(i-1,2)+ spacing) ];
 end
-%% Go through every trial and compute posterior probabilities (unshuffled and shuffled)
+
+% Go through every trial and compute posterior probabilities (unshuffled and shuffled)
 
 num_shuffles = 100; % Number of shuffles for null distribution
 for n=1:6
@@ -252,7 +253,7 @@ for n=1:6
     predictors = zeros(length(filter),length(electrode_indices));
 
     for i=1:length(electrode_indices)
-        predictors(:,i) = sum(subject(n).electrode(electrode_indices(i)).trigger(3).high_gamma_mat(filter, sliding_epochs(best_epoch, 1):sliding_epochs(best_epoch, 2)), 2) / (sliding_epochs(best_epoch, 2)-sliding_epochs(best_epoch, 1)+1);
+        predictors(:,i) = sum(subject(n).electrode(electrode_indices(i)).trigger(2).high_gamma_mat(filter, sliding_epochs(best_epoch, 1):sliding_epochs(best_epoch, 2)), 2) / (sliding_epochs(best_epoch, 2)-sliding_epochs(best_epoch, 1)+1);
     end
 
     % Train the model using the reduced predictors
@@ -283,7 +284,7 @@ for n=1:6
 
                     % Sum neural data for each electrode
                     for b = 1:length(electrode_indices)
-                        signal = sum(subject(n).electrode(electrode_indices(b)).trigger(3).high_gamma_mat(filter(x), trial_epochs(i, 1):trial_epochs(i, 2)), 2) / length_trial_epoch;
+                        signal = sum(subject(n).electrode(electrode_indices(b)).trigger(2).high_gamma_mat(filter(x), trial_epochs(i, 1):trial_epochs(i, 2)), 2) / length_trial_epoch;
                         new_predictors(b) = signal;
                     end
 

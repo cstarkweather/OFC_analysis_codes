@@ -1,0 +1,44 @@
+Code reproducing main figures. All electrophysiological and behavioral data is contained in data-->subject.mat, also available at Dryad (https://doi.org/10.5061/dryad.kh18932k7).
+
+  # Reproducibility Capsule:
+
+  ## Instructions
+
+  Click the **"Reproducible Run"** button to run the run.sh code, which triggers Fig#.m for each figure. Figures 2 and 3 are lumped together as they rely on many of the same variables being loaded. Corresponding subplots will be saved in the results folder. Please note that some schematics and diagrams are omitted and therefore the subplot letter (ex. Fig 5b) does not correspond exactly (and in order) to Figure 5b in the manuscript. However, all plots saved as Fig 5a-e correspond to data-containing subplots of Figure 5.
+
+  Analyses related to lasso regression decoding (Figure 5), computing posteriors over trials, and state metadata are contained in computing_and_saving_state_analysis_Lasso.m. This code takes a couple hours to run and therefore the output files to produce the main figures (accuracies.mat, chosen_indices, posteriors, state_metadata for each subject 1-6) are saved separately in data. However, this variables can be saved if the reviewer wishes to generate a fresh run of these analyses. The stepwise AIC method (rather than Lasso) can also be used by running computing_and_saving_state_analysis_AIC, which produces qualitatively similar results to the Lasso.
+
+  subject.mat structure:
+
+  * subject is the "master" variable. All main figure analyses from the manuscript can be reproduced using the "subject" variable. Below I explain the subfields. Use subject(n).subfield1 to obtain subfield1 information for subject n
+  * STORAGE OF TRIAL INFORMATION AND BEHAVIOR:
+    * decision: the decision made on a particular trial. ordered sequentially from 1-n_trials. 1 = approach. 0 = avoidance.
+    * The below variables (all subfields of "subject") are the key to understanding the task the subject played, and overall how they played it:
+      *     reward_trial_type: for trial type n, reward_trial_type(n) is the reward offer for that trial type (# lit treasures)
+
+            punishment_trial_type: for trial type n, punishment_trial_type(n) is the punishment offer for that trial type (# lit bombs)
+
+            conflict_trial_type: for trial type n, conflict_trial_type(n) is the behavioral conflict the subject exhibited
+
+            trial_type_trial_type: the numbered trial type.
+
+            p_approach_trial_type: for trial type n, p_approach_trial_type(n) is the subject's overall probability of approach
+    * The below variables give the trial-by-trial log of the subject's behavior. Each will be 1-ntrials long.
+      *         p_approach_trial: subject's overall approach probability for the particular trial type presented in the nth trial 
+
+            conflict_trial: subject's overall behavioral conflict for the particular trial type presented in the nth trial
+
+            reward_trial: reward offer on a particular trial
+
+            punish_trial: punishment offer on a particular trial
+
+            trial_type_trial: trial type from beginning to end of session
+    * trial_type_trial: index of distinct trial type spanning from 1-ntrials. each trial type corresponded to a distinct reward/punishment combo.
+  * STORAGE OF NEURAL DATA:
+    * electrode: information about each electrode for each subject. So, subject(1).electrode(1) provides coordinates (lat_coor/med_coor/olf_coor/trans_coor) relative to lateral orbital sulcus, medial orbital sulcus, olfactory sulcus, and transverse orbital sulcus for electrode 1 in subject 1. I suggest adhering to these coordinates rather than "anatomical info" as the coordinates are most accurate and obtained using manual surface labeling by neuroanatomists (see info in Methods for the anatomical method) whereas the anatomical info was not based on these detailed reconstructions.
+      * The subfield within electrode is trigger: 1 = align to trial onset. 2 = align to decision (button press).
+        * The subfield within trigger is high_gamma_mat, which is the neural data (high frequency activity). So, for instance, subject(1).electrode(1).trigger(1).high_gamma_mat gives a high_gamma_mat: [220×10000 double] where each row is a trial from 1-ntrials and each column is a timepoint (in milliseconds) from that trial, aligned to the trigger of interest. So, for example, this would be high frequency activity for the electrode 1 in subject 1 spanning from 5000ms prior to trial onset to 5000ms after trial onset.
+authors:
+- name: Clara Starkweather
+  affiliations:
+  - name: UCSF
