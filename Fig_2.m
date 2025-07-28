@@ -1,4 +1,4 @@
-
+load('subject_data.mat')
 %% build roc_tc
 folders = [{'EC304'} {'EC288'} {'PR05'} {'PR06'} {'BJH058'} {'DP01'}];
 
@@ -248,7 +248,7 @@ clust2 = find(min_vals == min(min_vals));
 %% look at group PSTH
 
 figure(3)
-clust_indices = find(clustlabel==clust2);
+clust_indices = find(clustlabel==clust1); %toggle to clust2 to see clust2 activity
 
 t = 2;num_conditions = 2;
 
@@ -485,14 +485,14 @@ figure;
 h = imagesc(x_centers, y_centers, plot_data);  % Plot the data
 colormap(custom_cmap);  % Apply the custom colormap
 colorbar;
-clim([0, 1]);  % Set the color limits to 0 to 1 (probability range)
+clim([0, 0.7]);  % Set the color limits to 0 to 1 (probability range)
 
 % Set transparency based on the number of electrodes in each bin
 alpha_data = total_electrodes_in_bins./max(max(total_electrodes_in_bins));
 set(h, 'AlphaData', alpha_data);
 
 % Set the null probability to correspond to gray in the colormap
-set(gca, 'CLim', [0, 1]);  % Color limits between 0 and 1 (for probability)
+set(gca, 'CLim', [0, 0.7]);  % Color limits between 0 and 1 (for probability)
 %caxis([0 1]);  % Set color axis with gray for null probability
 
 

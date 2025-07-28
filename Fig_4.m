@@ -13,23 +13,18 @@ figure
 
 for i=1:3
     subplot(1,3,i)
-mfsim_fitting_plot_nullclines_figure(combos(i,1),combos(i,2), 0.001, 1,alphareward,alphapunish,noise,lambda,w_i,alpha,valence,offset,0)
+mfsim_fitting_plot_nullclines_figure(combos(i,1),combos(i,2), 0.001, 1,alphareward,alphapunish,noise,lambda,w_i,alpha,valence,offset,0);
 end
 
-exportgraphics(gcf, '/results/figure4a.png');
-disp('Saved /results/figure4a.png');
-
-
-load('/data/posterior_params.mat')
+load('posterior_params.mat')
 % posteriors for approach and avoid state (these will depend on the noise level) are pre-computed in 'calculate_posteriors' and saved as 'posterior_params.mat'
 
 
 %%high conflict example trajectory
 
-
 figure
 hold on
-% for a particular reward/punishment contingency (here, reward = 7; punishment = 4), compute nullclines and the trajectory with some random gaussian noise on a single example trial
+%% for a particular reward/punishment contingency (here, reward = 7; punishment = 4), compute nullclines and the trajectory with some random gaussian noise on a single example trial
 [trajx trajy]=mfsim_fitting_plot_nullclines_figure(7, 4, 0.001, 1,alphareward,alphapunish,noise,lambda,w_i,alpha,valence,offset,1);
 hold on
 
@@ -44,7 +39,7 @@ end
 % once the posterior probability of a particular state stabilizes to favor one state over the other (p(state) = 0.9) for a certain amount of time (duration used in manuscript = 400ms), make a decision. make note of that decision time to just plot the example trajectory until that time
 [decision_time, decision, num_state]=detectStatePreferences(p,400,0.9)
 
-%% another way to plot data above over time (different timepoints shown with color gradient)
+% another way to plot data above over time (different timepoints shown with color gradient)
 xdata = smooth(trajx(1:decision_time) , 20);
 ydata = smooth(trajy(1:decision_time) , 20);
 
@@ -76,14 +71,10 @@ xlim([-1.5 5.5])
 ylim([-1.5 5.5])
 title('high conflict example trajectory')
 
-exportgraphics(gcf, '/results/figure4b.png');
-disp('Saved /results/figure4b.png');
 
 
 
-
-
-%%low conflict example trajectory
+%% low conflict example trajectory
 
 figure
 hold on
@@ -102,7 +93,7 @@ end
 % once the posterior probability of a particular state stabilizes to favor one state over the other (p(state) = 0.9) for a certain amount of time (duration used in manuscript = 400ms), make a decision. make note of that decision time to just plot the example trajectory until that time
 [decision_time, decision, num_state]=detectStatePreferences(p,400,0.9)
 
-%% another way to plot data above over time (different timepoints shown with color gradient)
+% another way to plot data above over time (different timepoints shown with color gradient)
 xdata = smooth(trajx(1:decision_time) , 20);
 ydata = smooth(trajy(1:decision_time) , 20);
 
@@ -133,10 +124,6 @@ set(gca, 'TickDir', 'out');
 xlim([-1.5 5.5])
 ylim([-1.5 5.5])
 title('low conflict example trajectory')
-
-exportgraphics(gcf, '/results/figure4c.png');
-disp('Saved /results/figure4c.png');
-
 
 
 
@@ -277,6 +264,3 @@ title(sprintf('r = %.3f, p = %.3g', rho, pval));
 xlabel('conflict');
 ylabel('transition rate');
 xlim([0 1])
-
-exportgraphics(gcf, '/results/figure4d.png');
-disp('Saved /results/figure4d.png');

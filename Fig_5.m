@@ -1,7 +1,6 @@
-load('/data/accuracies.mat')
-m = matfile('/data/subject_data.mat');  % absolute path inside capsule
-subject = m.subject;
-
+% decoding accuracy for single subject example
+load('accuracies.mat')
+load('subject_data.mat')
 n = 4; %subject 4 for this example plotting shown in Figure 5a-b
 num_bootstraps = 500;
 for i=1:size(sliding_epochs,1)
@@ -12,7 +11,6 @@ for i=1:size(sliding_epochs,1)
     plot(sliding_epochs(i,1),all_subjects_mean_shuffled_accuracies(n,i),'.','Markersize',20,'Color',[0.5 0.5 0.5])
     hold on
 end
-figure
 errorbar(sliding_epochs(:,1)',all_subjects_mean_accuracies(n,:),error_real,'Color',[0 0 0],'CapSize', 0)
 hold on
 errorbar(sliding_epochs(:,1)',all_subjects_mean_shuffled_accuracies(n,:),error_shuffled,'Color',[0.5 0.5 0.5],'CapSize', 0)
@@ -23,18 +21,17 @@ yline(sum(subject(n).decision==1)/(sum(subject(n).decision==1) + sum(subject(n).
 set(gca, 'TickDir', 'out', 'Box', 'off', 'Color', 'w');
 set(gcf, 'Color', 'w');
 xlim([4250 4700])
-exportgraphics(gcf, '/results/figure5a.png');
-disp('Saved /results/figure5a.png');
+
 
 %% example single trials - posterior probabilities over time
 n=4;
-loadname = strcat(['/data/posteriors_' num2str(n) '.mat']);
+loadname = strcat(['posteriors_' num2str(n) '.mat']);
 load(loadname)
 
-loadname = strcat(['/data/state_metadata_' num2str(n) '.mat']);
+loadname = strcat(['state_metadata_' num2str(n) '.mat']);
 load(loadname)
 
-loadname = strcat(['/data/chosen_indices_' num2str(n) '.mat']);
+loadname = strcat(['chosen_indices_' num2str(n) '.mat']);
 load(loadname)
 
 
@@ -100,9 +97,6 @@ xline(entry_times(trial_identity==filter(which_trial) & state_identity<0),'b')
 xline(departure_times(trial_identity==filter(which_trial)  & state_identity<0),'b--')
 set(gca, 'TickDir', 'out', 'Box', 'off', 'Color', 'w');
 set(gcf, 'Color', 'w');
-exportgraphics(gcf, '/results/figure5b.png');
-disp('Saved /results/figure5b.png');
-
 
 %% Noisy ramp vs discrete attractor?
 pos_coding_e=[];
@@ -110,9 +104,9 @@ neg_coding_e=[];
 pos_coding_n=[];
 neg_coding_n=[];
 for n = 1:6
-    posteriors_name = strcat(['/data/posteriors_' num2str(n) '.mat']);
+    posteriors_name = strcat(['posteriors_' num2str(n) '.mat']);
     load(posteriors_name,'glm_model')
-    electrodes_name = strcat(['/data/chosen_indices_' num2str(n) '.mat']);
+    electrodes_name = strcat(['chosen_indices_' num2str(n) '.mat']);
     load(electrodes_name)
     electrode_indices = electrode_indices';
     beta_weights = glm_model.Coefficients{2:end, 1};
@@ -146,7 +140,7 @@ for j = 1:6
     for a = 1:length(e_set)
         e = e_set(a);
         n = n_set(a);
-        state_name = strcat(['/data/state_metadata_' num2str(n) '.mat']);
+        state_name = strcat(['state_metadata_' num2str(n) '.mat']);
         load(state_name)
         bound1 = -rt*0.33;
         bound2 = -rt*0.67;
@@ -207,8 +201,6 @@ xlabel('Time from state switch (milliseconds)', 'FontSize', 14);
 ylabel('High gamma amplitude', 'FontSize', 14);
 xline(0)
 xlim([-20 120])
-exportgraphics(gcf, '/results/figure5c.png');
-disp('Saved /results/figure5c.png');
 
 
 %% anova FOR POSITIVE STATE SWITCHES
@@ -219,7 +211,7 @@ anova2([sum(for_anova{4}(:,300:375),2),sum(for_anova{5}(:,300:375),2),sum(for_an
 num_subjects = 6;
 proportion_outside0 = zeros(1,num_subjects);
 for n = 1:num_subjects
-    load(strcat(['/data/posteriors_' num2str(n) '.mat']))
+    load(strcat(['posteriors_' num2str(n) '.mat']))
     % Assume posterior_probabilities_shuffled is a cell array where each cell contains a matrix
     num_shuffles = length(posterior_probabilities_shuffled);
 
@@ -259,7 +251,7 @@ std(proportion_outside0)
 %% confirm proportion outside not just due to decoding window
 proportion_outside = zeros(1,num_subjects);
 for n = 1:6
-    load(strcat(['/data/posteriors_' num2str(n) '.mat']))
+    load(strcat(['posteriors_' num2str(n) '.mat']))
     % Assume posterior_probabilities_shuffled is a cell array where each cell contains a matrix
     num_shuffles = length(posterior_probabilities_shuffled);
 
@@ -325,7 +317,7 @@ for n = 1:num_subjects
         trialset{i} = find(subject(n).trial_type_trial == unique_trial_types(i) & subject(n).decision < 2);
     end
 
-    state_metadata_name = strcat(['/data/state_metadata_' num2str(n) '.mat']);
+    state_metadata_name = strcat(['state_metadata_' num2str(n) '.mat']);
     load(state_metadata_name)
 
     for a = 1:length(trialset)
@@ -364,8 +356,6 @@ end
 xlabel('Conflict')
 ylabel('Number of States Visited')
 title('Conflict versus number of states visited per trial')
-exportgraphics(gcf, '/results/figure5d.png');
-disp('Saved /results/figure5d.png');
 
 
 %% stats- linear mixed effects model - does conflict modulate number of states visited?
@@ -407,7 +397,7 @@ for n = 1:num_subjects
         trialset{i} = find(subject(n).trial_type_trial == unique_trial_types(i) & subject(n).decision < 2);
     end
 
-    state_metadata_name = strcat(['/data/state_metadata_' num2str(n) '.mat']);
+    state_metadata_name = strcat(['state_metadata_' num2str(n) '.mat']);
     load(state_metadata_name)
 
     for a = 1:length(trialset)
@@ -448,8 +438,7 @@ end
 xlabel('Conflict')
 ylabel('Transition Rate')
 title('Conflict versus state transition rate')
-exportgraphics(gcf, '/results/figure5e.png');
-disp('Saved /results/figure5e.png');
+
 
 %% stats- linear mixed effects model -   does conflict modulate transition rate?
 % Suppose you have a table with the following columns:

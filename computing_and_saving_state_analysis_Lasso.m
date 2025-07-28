@@ -347,7 +347,6 @@ for n=1:num_subjects
     trial_identity = [];
     reward = [];
     conflict = [];
-    value = [];
     punishment = [];
     state_duration = [];
     transfer_time = [];
@@ -381,7 +380,6 @@ for n=1:num_subjects
             reward = [reward; subject(n).reward_trial(filter(trial))];
             punishment = [punishment; subject(n).punish_trial(filter(trial))];
             conflict = [conflict; subject(n).conflict_trial(filter(trial))];
-            value = [value; subject(n).value_trial(filter(trial))];
             decision = [decision; subject(n).decision(filter(trial))];
             rt = [rt; subject(n).rt(filter(trial))];
 
@@ -418,7 +416,6 @@ for n=1:num_subjects
                 reward = [reward; subject(n).reward_trial(filter(trial))];
                 punishment = [punishment; subject(n).punish_trial(filter(trial))];
                 conflict = [conflict; subject(n).conflict_trial(filter(trial))];
-                value = [value; subject(n).value_trial(filter(trial))];
                 decision = [decision; subject(n).decision(filter(trial))];
                 rt = [rt; subject(n).rt(filter(trial))];
 
@@ -460,7 +457,7 @@ for n=1:num_subjects
     transition_types = [];
     transition_trial_identity=[];
     reward_t=[];punishment_t=[];rt_t=[];
-    conflict_t=[];value_t = [];decision_t = [];
+    conflict_t=[];decision_t = [];
 
     % Loop over each trial identity
     for trial = unique(trial_identity)'
@@ -522,7 +519,6 @@ for n=1:num_subjects
                 reward_t = [reward_t; subject(n).reward_trial(trial)];
                 punishment_t = [punishment_t; subject(n).punish_trial(trial)];
                 conflict_t = [conflict_t; subject(n).conflict_trial(trial)];
-                value_t = [value_t; subject(n).value_trial(trial)];
                 decision_t = [decision_t; subject(n).decision(trial)];
                 rt_t = [rt_t; subject(n).rt(trial)];
             end
@@ -558,10 +554,10 @@ for n=1:num_subjects
         end
     end
 
-    savename = strcat(['/data/state_metadata_' num2str(n) '.mat']);
+    savename = strcat(['state_metadata_' num2str(n) '.mat']);
     save(savename,'full_state_flag','halfway_time','first_full_state_flag','last_state_flag','transition_trial_identity',...
         'transitionentry_times_store','transitiondeparture_times_store','transition_types', 'rt','rt_t',...
         'entry_times','departure_times','state_identity','trial_identity','state_duration', 'transfer_time', 'average_posterior_prob',...
-        'reward','punishment','reward_t','punishment_t','state_transition_times','conflict','conflict_t','value','value_t','decision','decision_t','combined_conf_interval');
+        'reward','punishment','reward_t','punishment_t','state_transition_times','conflict','conflict_t','decision','decision_t','combined_conf_interval');
 
 end

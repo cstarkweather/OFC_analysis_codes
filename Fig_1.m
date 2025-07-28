@@ -1,6 +1,5 @@
-m = matfile('/data/subject_data.mat');  % absolute path inside capsule
-subject = m.subject;
-
+load('subject_data.mat')
+%%
 % Define the range of subjects to loop over
 n_subjects = 6; %one in Figure 1 is Subject 5
 
@@ -15,7 +14,7 @@ mu_store = [];
 
 % Loop through each subject
 for n = 1:n_subjects
-
+figure
     % Call your plotting function
     [rho_conflict, pval_conflict, rho_rt, pval_rt, ...
      alpha_reward, alpha_punish, lambda, mu] = ...
@@ -34,15 +33,6 @@ for n = 1:n_subjects
     lambda_store = [lambda_store lambda];
     mu_store = [mu_store mu];
 
-    % Save the figure only for Subject 5
-    % After calling plotSubjectData, get the current figure handle
-    if n == 5
-        f = gcf;  % Grab current figure created by plotSubjectData
-        exportgraphics(f, '/results/figure1.png');  % Save to visible /results path
-        close(f);
-        disp('Saved /results/figure1.png');
-    end
-
 
 
 end
@@ -55,9 +45,9 @@ disp('Reaction time model results (results2):');
 disp(results2);
 
 
-%%
-f1b = figure('Visible', 'off');
+%% plot all slopes (value vs conflict; value vs rt) for all subjects
 
+figure
 for i = 1:6
     if results1(i,3)<0.05
         plot(1 + rand *0.1,results1(i,2),'k.'); hold on
@@ -75,11 +65,6 @@ end
 xlim([0.8 1.8]); ylim([-1 1]);
 box off; set(gca, 'TickDir', 'out');
 
-exportgraphics(f1b, '/results/figure1b.png');
-disp('Saved /results/figure1b.png');
-
-
-%%
 
 %% Adapted plotSubjectData function using prospect theory model
 function [rho_conflict, pval_conflict, rho_rt, pval_rt,alpha_reward_opt,alpha_punish_opt,lambda_opt,mu_opt] = ...

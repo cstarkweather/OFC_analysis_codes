@@ -2,7 +2,54 @@
 
 Dataset DOI: [10.5061/dryad.kh18932k7](10.5061/dryad.kh18932k7)
 
+Code reproducing main figures. All electrophysiological and behavioral data is contained in subject_data.mat, available at Dryad (https://doi.org/10.5061/dryad.kh18932k7).
+
+
+Please note that some schematics and diagrams are omitted and therefore the subplot letter (ex. Fig 5b) does not correspond exactly (and in order) to Figure 5b in the manuscript. However, all plots saved as Fig 5a-e correspond to data-containing subplots of Figure 5.
+
+Analyses related to lasso regression decoding (Figure 5), computing posteriors over trials, and state metadata are contained in computing_and_saving_state_analysis_Lasso.m. This code takes a couple hours to run and therefore the output files to produce the main figures (accuracies.mat, chosen_indices, posteriors, state_metadata for each subject 1-6) are saved separately here. However, these variables can be saved if the reviewer wishes to generate a fresh run of these analyses. The stepwise AIC method (rather than Lasso) can also be used by running computing_and_saving_state_analysis_AIC, which produces qualitatively similar results to the Lasso.
+
 ## Description of the data and file structure
+
+### Files and variables
+
+#### File: subject_data.mat
+
+**Description:** 
+
+##### Variables
+
+* subject is the "master" variable. All main figure analyses from the manuscript can be reproduced using the "subject" variable. Below I explain the subfields. Use subject(n).subfield1 to obtain subfield1 information for subject n
+* STORAGE OF TRIAL INFORMATION AND BEHAVIOR:
+  * decision: the decision made on a particular trial. ordered sequentially from 1-n_trials. 1 = approach. 0 = avoidance.
+  * The below variables (all subfields of "subject") are the key to understanding the task the subject played, and overall how they played it:
+    *     reward_trial_type: for trial type n, reward_trial_type(n) is the reward offer for that trial type (# lit treasures)
+
+          punishment_trial_type: for trial type n, punishment_trial_type(n) is the punishment offer for that trial type (# lit bombs)
+
+          conflict_trial_type: for trial type n, conflict_trial_type(n) is the behavioral conflict the subject exhibited
+
+          trial_type_trial_type: the numbered trial type.
+
+          p_approach_trial_type: for trial type n, p_approach_trial_type(n) is the subject's overall probability of approach
+  * The below variables give the trial-by-trial log of the subject's behavior. Each will be 1-ntrials long.
+    *         p_approach_trial: subject's overall approach probability for the particular trial type presented in the nth trial 
+
+          conflict_trial: subject's overall behavioral conflict for the particular trial type presented in the nth trial
+
+          reward_trial: reward offer on a particular trial
+
+          punish_trial: punishment offer on a particular trial
+
+          trial_type_trial: trial type from beginning to end of session
+  * trial_type_trial: index of distinct trial type spanning from 1-ntrials. each trial type corresponded to a distinct reward/punishment combo.
+* STORAGE OF NEURAL DATA:
+  * electrode: information about each electrode for each subject. So, subject(1).electrode(1) provides coordinates (lat_coor/med_coor/olf_coor/trans_coor) relative to lateral orbital sulcus, medial orbital sulcus, olfactory sulcus, and transverse orbital sulcus for electrode 1 in subject 1. I suggest adhering to these coordinates rather than "anatomical info" as the coordinates are most accurate and obtained using manual surface labeling by neuroanatomists (see info in Methods for the anatomical method) whereas the anatomical info was not based on these detailed reconstructions.
+    * The subfield within electrode is trigger: 1 = align to trial onset. 2 = align to decision (button press).
+      * The subfield within trigger is high_gamma_mat, which is the neural data (high frequency activity). So, for instance, subject(1).electrode(1).trigger(1).high_gamma_mat gives a high_gamma_mat: [220×10000 double] where each row is a trial from 1-ntrials and each column is a timepoint (in milliseconds) from that trial, aligned to the trigger of interest. So, for example, this would be high frequency activity for the electrode 1 in subject 1 spanning from 5000ms prior to trial onset to 5000ms after trial onset.
+
+
+
 
 Methods for data collection and preprocessing (this text is reproduced from the submitted manuscript that is currently under revision):
 
@@ -37,42 +84,6 @@ Electrodes were localized based on co-registration of 1mm slice thickness T1 wei
 Data collection and preprocessing
 
 We recorded from a total of 131 electrode contacts located in the OFC. Intracranial electroencephalography data were acquired using a multichannel pre-amplifier connected to a digital signal processor and digitized at 3-10kHz using either the Tucker-Davis Technologies or Nihon Kohden recording system. There were no seizures recorded during any epochs. Epilepsy patients’ data was manually examined in subsecond epochs during task recording to confirm the absence of epileptiform activity. Furthermore, the OFC was not identified as an epileptiform locus in any of the patients. Data were visually inspected and flat or noisy channels were removed. Bipolar referencing was applied using the nearest neighboring electrode. Electrodes were only included in the dataset if a nearest neighbor for bipolar referencing was available. Following elimination of noisy channels (15 electrodes) and the exclusion of redundant electrodes introduced by bipolar referencing (14 electrodes), 102 electrodes were included in the final dataset. Laplacian and common average referencing were also tested and yielded similar results to those reported in the manuscript. The fieldtrip package in MATLAB was used for the following pre-processing steps. First, the data was bandpass filtered between 0.5 and 200Hz. Next, a notch filter was applied to remove 60Hz noise and harmonics. To compute the amplitude of high frequency activity (HFA – 70-150Hz), the data was first narrowband filtered in 10Hz bands from 70Hz to 150Hz. The Hilbert transform was applied to the filtered data, and the amplitude envelope was computed for each 10Hz band. Each band’s amplitude was normalized to its average amplitude during a 10s pre-task period, to account for the 1/f exponential decay of signal amplitude across frequency bands. The normalized HFA amplitude for each 10Hz band spanning from 70Hz to 150Hz was averaged to provide the final analyzed HFA signal.
-### Files and variables
-
-#### File: subject\_data.mat
-
-**Description:** 
-
-##### Variables
-
-* subject is the "master" variable. All main figure analyses from the manuscript can be reproduced using the "subject" variable. Below I explain the subfields. Use subject(n).subfield1 to obtain subfield1 information for subject n
-* STORAGE OF TRIAL INFORMATION AND BEHAVIOR:
-  * decision: the decision made on a particular trial. ordered sequentially from 1-n_trials. 1 = approach. 0 = avoidance.
-  * The below variables (all subfields of "subject") are the key to understanding the task the subject played, and overall how they played it:
-    *     reward_trial_type: for trial type n, reward_trial_type(n) is the reward offer for that trial type (# lit treasures)
-
-          punishment_trial_type: for trial type n, punishment_trial_type(n) is the punishment offer for that trial type (# lit bombs)
-
-          conflict_trial_type: for trial type n, conflict_trial_type(n) is the behavioral conflict the subject exhibited
-
-          trial_type_trial_type: the numbered trial type.
-
-          p_approach_trial_type: for trial type n, p_approach_trial_type(n) is the subject's overall probability of approach
-  * The below variables give the trial-by-trial log of the subject's behavior. Each will be 1-ntrials long.
-    *         p_approach_trial: subject's overall approach probability for the particular trial type presented in the nth trial 
-
-          conflict_trial: subject's overall behavioral conflict for the particular trial type presented in the nth trial
-
-          reward_trial: reward offer on a particular trial
-
-          punish_trial: punishment offer on a particular trial
-
-          trial_type_trial: trial type from beginning to end of session
-  * trial_type_trial: index of distinct trial type spanning from 1-ntrials. each trial type corresponded to a distinct reward/punishment combo.
-* STORAGE OF NEURAL DATA:
-  * electrode: information about each electrode for each subject. So, subject(1).electrode(1) provides coordinates (lat_coor/med_coor/olf_coor/trans_coor) relative to lateral orbital sulcus, medial orbital sulcus, olfactory sulcus, and transverse orbital sulcus for electrode 1 in subject 1. I suggest adhering to these coordinates rather than "anatomical info" as the coordinates are most accurate and obtained using manual surface labeling by neuroanatomists (see info in Methods for the anatomical method) whereas the anatomical info was not based on these detailed reconstructions.
-    * The subfield within electrode is trigger: 1 = align to trial onset. 2 = align to decision (button press).
-      * The subfield within trigger is high_gamma_mat, which is the neural data (high frequency activity). So, for instance, subject(1).electrode(1).trigger(1).high_gamma_mat gives a high_gamma_mat: [220×10000 double] where each row is a trial from 1-ntrials and each column is a timepoint (in milliseconds) from that trial, aligned to the trigger of interest. So, for example, this would be high frequency activity for the electrode 1 in subject 1 spanning from 5000ms prior to trial onset to 5000ms after trial onset.
 
 
 ## Code/software
